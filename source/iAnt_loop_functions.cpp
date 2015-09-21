@@ -86,11 +86,11 @@ void iAnt_loop_functions::Init(TConfigurationNode& node) {
     GetNodeAttribute(cluster,  "ClusterLengthY",                    ClusterLengthY);
     GetNodeAttribute(powerLaw, "PowerRank",                         PowerRank);
 
-//    string chromosomeString;
-//
-//    GetNodeAttribute(simNode, "Chromosome",                         chromosomeString);
-//
-//    loadChromosome(chromosomeString);
+    string chromosomeString;
+
+    GetNodeAttribute(simNode, "Chromosome",                         chromosomeString);
+
+    loadChromosome(chromosomeString);
 
     /* Convert and calculate additional values. */
     TicksPerSecond            = physicsEngine->GetInverseSimulationClockTick();
@@ -184,11 +184,11 @@ void iAnt_loop_functions::PostExperiment() {
         //LOG << "\ntags_collected, time_in_minutes, random_seed\n";
         LOG << "[" << getFitness() << "], ";
         LOG << time_in_minutes << ", " << RandomSeed << ", " << endl;
-        //outputChromosome();
+        outputChromosome();
     } else {
         LOG << "[" << getFitness() << "], ";
         LOG << time_in_minutes << ", " << RandomSeed << ", "  << endl;
-        //outputChromosome();
+        outputChromosome();
     }
 
     SimCounter++;
@@ -557,7 +557,7 @@ Real iAnt_loop_functions::getFitness() {
     Real fitness = 0;
 
     fitness += FoodItemCount - FoodList.size();
-    fitness += 10 * foodReturned;
+    fitness += 2 * foodReturned;
 
 
     return fitness;
