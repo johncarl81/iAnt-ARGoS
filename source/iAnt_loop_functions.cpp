@@ -191,7 +191,9 @@ void iAnt_loop_functions::PostExperiment() {
         outputChromosome();
     }
 
-    SimCounter++;
+    outputChromosomeDotFile();
+
+        SimCounter++;
 }
 
 /*****
@@ -553,6 +555,22 @@ void iAnt_loop_functions::outputChromosome(){
     LOG << endl;
 }
 
+void iAnt_loop_functions::outputChromosomeDotFile(){
+    ofstream chromOutput("iAntChrom.dot", ios::app);
+
+    chromOutput <<"digraph {\n";
+
+    for(int i = 0; i < chromosome->getSize(); i++){
+        Chromosome::Gene * gene = chromosome->getGene(i);
+        chromOutput << gene->from;
+        chromOutput << "->";
+        chromOutput << gene->to;
+        chromOutput << "[label =\"";
+        chromOutput << gene->weight;
+        chromOutput << "\"]\n";
+    }
+    chromOutput << "}\n";
+}
 Real iAnt_loop_functions::getFitness() {
     Real fitness = 0;
 
