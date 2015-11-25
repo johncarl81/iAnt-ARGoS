@@ -155,18 +155,10 @@ void CPFA_qt_user_functions::DrawPheromones() {
 
 void CPFA_qt_user_functions::DrawTargetRays() {
 
-    CColor c = CColor::BLACK;
+    CColor c = CColor::BLUE;
 
     for(size_t j = 0; j < loopFunctions.TargetRayList.size(); j++) {
-
-        //for(size_t i = 0; i < loopFunctions.TargetRayList[j].size(); i++) {
-            //if(j == 0) c = CColor::RED;
-            //else if(j == 1) c = CColor::YELLOW;
-
-            //DrawRay(loopFunctions.TargetRayList[j][i], c);
-            DrawRay(loopFunctions.TargetRayList[j], c);
-        //}
-
+            DrawRay(loopFunctions.TargetRayList[j],c);
     }
 
     //if(loopFunctions.SimTime % (loopFunctions.TicksPerSecond * 10) == 0) {

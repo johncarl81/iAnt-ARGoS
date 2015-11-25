@@ -1,123 +1,5 @@
 #include "DSA_controller.h"
 
-size_t DSA_controller::generatePattern(int N_circuits, int N_robots)
-{
-	string ID = GetId();
-	string ID_number;
-
-	for(size_t i = 0; i < ID.size(); i++) {
-		if(ID[i] >= '0' && ID[i] <= '9') {
-			ID_number += ID[i];
-		}
-	}
-
-	size_t RobotNumber = stoi(ID_number);
-	vector<string> paths;
-	string ith_robot_path;
-
-	for (int i_robot = 1; i_robot <= N_robots; i_robot++)
-	{
-		// cout << "inside for 1" << endl;
-		for (int i_circuit = 0; i_circuit < N_circuits; i_circuit++)
-		{
-			int n_steps_north = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'N');
-			for (int j = 0; j < n_steps_north; j++)
-			{
-				//ith_robot_path.push_back('N');
-				ith_robot_path += 'N';
-			}
-			
-			int n_steps_east = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'E');
-			for (int j = 0; j < n_steps_east; j++)
-			{
-				//ith_robot_path.push_back('E');
-				ith_robot_path += 'E';
-			}
-
-			int n_steps_south = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'S');
-			for (int j = 0; j < n_steps_south; j++)
-			{
-				//ith_robot_path.push_back('S');
-				ith_robot_path += 'S';
-			}
-
-			int n_steps_west = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'W');
-			for (int j = 0; j < n_steps_west; j++)
-			{
-				//ith_robot_path.push_back('W');
-				ith_robot_path += 'W';
-			}
-
-		}
-
-		paths.push_back(ith_robot_path);
-		ith_robot_path.clear();
-	}
-
-	//pattern = ith_robot_path;
-	GetPattern(paths[RobotNumber]);
-
-	return RobotNumber;
-}
-
-int DSA_controller::calcDistanceToTravel(int i_robot, int i_circuit, int N_robots, char direction)
-{
-	int i = i_robot;
-	int j = i_circuit;
-	int N = N_robots;
-	int n_steps  = 0;
-
-	if (direction == 'N' || direction == 'E')
-	{
-		if (j == 0)
-		{
-			n_steps = i;
-			return n_steps;
-		}
-		else if (j == 1)
-		{
-			n_steps = calcDistanceToTravel(i, j-1, N, direction) + i + N;
-			return n_steps;
-		}
-		else 
-		{
-			n_steps = calcDistanceToTravel(i, j-1, N, direction) + 2*N;
-			return n_steps;
-		}
-	}
-
-	else if (direction == 'S' || direction == 'W')
-	{
-		if (j == 0)
-		{
-			n_steps = calcDistanceToTravel(i, j , N, 'N') + i;
-			return n_steps;
-		}
-
-		else if (j > 0)
-		{
-			n_steps = calcDistanceToTravel(i, j, N, 'N') + N;
-			return n_steps;
-		}
-
-		else
-		{
-			cout << "Error direction" << direction << "is invalid" << endl;
-		}
-
-	}
-	return 0;
-}
-
-void DSA_controller::printPath(vector<char>& path)
-{
-	cout << path.size() << endl;
-	for(int i = 0; i<path.size(); i++)
-	{ 
-		cout << path.at(i) << endl;
-	}
-}
-
 /*****
  * Initialize most basic variables and objects here. Most of the setup should
  * be done in the Init(...) function instead of here where possible.
@@ -146,20 +28,140 @@ void DSA_controller::Init(TConfigurationNode& node) {
     argos::GetNodeAttribute(settings, "NumberOfRobots",          NumberOfRobots);
     argos::GetNodeAttribute(settings, "NumberOfSpirals",         NumberOfSpirals);
     argos::GetNodeAttribute(settings, "TargetDistanceTolerance", TargetDistanceTolerance);
-    argos::GetNodeAttribute(settings, "SearchStepSize",          SearchStepSize);
+    argos::GetNodeAttribute(settings, "SearcherGap",             SearcherGap);
+    argos::GetNodeAttribute(settings, "FoodDistanceTolerance",   FoodDistanceTolerance);
     argos::GetNodeAttribute(settings, "RobotForwardSpeed",       RobotForwardSpeed);
     argos::GetNodeAttribute(settings, "RobotRotationSpeed",      RobotRotationSpeed);
+
+    FoodDistanceTolerance *= FoodDistanceTolerance;
 
     argos::CVector2 p(GetPosition());
     SetStartPosition(argos::CVector3(p.GetX(), p.GetY(), 0.0));
     
-    stepSize = 0.1; /* Assigns the robot's stepSize */
     startPosition = CVector3(0.0, 0.0, 0.0);
 
     RNG = CRandom::CreateRNG("argos");
     generatePattern(NumberOfSpirals, NumberOfRobots);
+    TrailColor = CColor(std::rand()%255, std::rand()%255, std::rand()%255, 255);
 }
 
+size_t DSA_controller::generatePattern(int N_circuits, int N_robots)
+{
+    string ID = GetId();
+    string ID_number;
+
+    for(size_t i = 0; i < ID.size(); i++) {
+        if(ID[i] >= '0' && ID[i] <= '9') {
+            ID_number += ID[i];
+        }
+    }
+
+    size_t RobotNumber = stoi(ID_number);
+    vector<string> paths;
+    string ith_robot_path;
+
+    for (int i_robot = 1; i_robot <= N_robots; i_robot++)
+    {
+        // cout << "inside for 1" << endl;
+        for (int i_circuit = 0; i_circuit < N_circuits; i_circuit++)
+        {
+            int n_steps_north = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'N');
+            for (int j = 0; j < n_steps_north; j++)
+            {
+                //ith_robot_path.push_back('N');
+                ith_robot_path += 'N';
+            }
+            
+            int n_steps_east = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'E');
+            for (int j = 0; j < n_steps_east; j++)
+            {
+                //ith_robot_path.push_back('E');
+                ith_robot_path += 'E';
+            }
+
+            int n_steps_south = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'S');
+            for (int j = 0; j < n_steps_south; j++)
+            {
+                //ith_robot_path.push_back('S');
+                ith_robot_path += 'S';
+            }
+
+            int n_steps_west = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'W');
+            for (int j = 0; j < n_steps_west; j++)
+            {
+                //ith_robot_path.push_back('W');
+                ith_robot_path += 'W';
+            }
+
+        }
+
+        paths.push_back(ith_robot_path);
+        ith_robot_path.clear();
+    }
+
+    //pattern = ith_robot_path;
+    GetPattern(paths[RobotNumber]);
+
+    return RobotNumber;
+}
+
+int DSA_controller::calcDistanceToTravel(int i_robot, int i_circuit, int N_robots, char direction)
+{
+    int i = i_robot;
+    int j = i_circuit;
+    int N = N_robots;
+    int n_steps  = 0;
+
+    if (direction == 'N' || direction == 'E')
+    {
+        if (j == 0)
+        {
+            n_steps = i;
+            return n_steps;
+        }
+        else if (j == 1)
+        {
+            n_steps = calcDistanceToTravel(i, j-1, N, direction) + i + N;
+            return n_steps;
+        }
+        else 
+        {
+            n_steps = calcDistanceToTravel(i, j-1, N, direction) + 2*N;
+            return n_steps;
+        }
+    }
+
+    else if (direction == 'S' || direction == 'W')
+    {
+        if (j == 0)
+        {
+            n_steps = calcDistanceToTravel(i, j , N, 'N') + i;
+            return n_steps;
+        }
+
+        else if (j > 0)
+        {
+            n_steps = calcDistanceToTravel(i, j, N, 'N') + N;
+            return n_steps;
+        }
+
+        else
+        {
+            cout << "Error direction" << direction << "is invalid" << endl;
+        }
+
+    }
+    return 0;
+}
+
+void DSA_controller::printPath(vector<char>& path)
+{
+    cout << path.size() << endl;
+    for(int i = 0; i<path.size(); i++)
+    { 
+        cout << path.at(i) << endl;
+    }
+}
 
 void DSA_controller::GetPattern(string ith_Pattern)
 {
@@ -187,24 +189,20 @@ void DSA_controller::ControlStep() {
 	/* Checks if the robot found a food */
 	SetHoldingFood();
 
-	if(IsHoldingFood() == false && DSA == SEARCHING) {
-	    /* draws target rays every 2 seconds */
-	    if((SimulationTick() % (SimulationTicksPerSecond() * 2)) == 0) {
-	        CVector3 position3d(GetPosition().GetX(), GetPosition().GetY(), 0.02);
-        	CVector3 target3d(GetTarget().GetX(), GetTarget().GetY(), 0.02);
-        	CRay3 targetRay(target3d, position3d);
-        	myTrail.push_back(targetRay);
-        	//LOG << myTrail.size() << endl;
-        	loopFunctions->TargetRayList.push_back(targetRay);
-	        //loopFunctions->TargetRayList.insert(loopFunctions->TargetRayList.end(), myTrail.begin(), myTrail.end());
-	    }
-	}
-
-    /* Checks if the robot found a food */
-    SetHoldingFood();
-
     /* If it didn't continue in a sprial */
     if(IsHoldingFood() == false && DSA == SEARCHING){
+
+        /* draws target rays every 2 seconds */
+        if((SimulationTick() % (SimulationTicksPerSecond() * 1)) == 0) {
+            CVector3 position3d(GetPosition().GetX(), GetPosition().GetY(), 0.02);
+            CVector3 target3d(GetTarget().GetX(), GetTarget().GetY(), 0.02);
+            CRay3 targetRay(target3d, position3d);
+            myTrail.push_back(targetRay);
+            //LOG << myTrail.size() << endl;
+            loopFunctions->TargetRayList.push_back(targetRay);
+            loopFunctions->TargetRayColorList.push_back(TrailColor);
+            //loopFunctions->TargetRayList.insert(loopFunctions->TargetRayList.end(), myTrail.begin(), myTrail.end());
+        }
 
         // DSA = SEARCHING;
         GetTargets(); /* Initializes targets positions. */
@@ -212,11 +210,11 @@ void DSA_controller::ControlStep() {
     } else if(IsHoldingFood() == true && DSA == RETURN_TO_NEST) { /* Check if it is near the nest then set isHoldingFood to false */
 
         if((GetPosition() - loopFunctions->NestPosition).SquareLength() < loopFunctions->NestRadiusSquared) {
-            isHoldingFood = false;
+            // isHoldingFood = false;
             DSA = RETURN_TO_SEARCH;
         }
 
-    } else {
+    } else if(IsHoldingFood() == false && DSA == RETURN_TO_SEARCH) {
 
         if((GetPosition() - ReturnPosition).SquareLength() < loopFunctions->NestRadiusSquared) {
             DSA = SEARCHING;
@@ -232,7 +230,7 @@ void DSA_controller::ControlStep() {
  *****/
 void DSA_controller::SetTargetN(char x){
     CVector2 position = GetTarget();
-    SetTarget(CVector2(position.GetX()+stepSize,position.GetY()));
+    SetTarget(CVector2(position.GetX()+SearcherGap,position.GetY()));
 }
 
 /*****
@@ -240,7 +238,7 @@ void DSA_controller::SetTargetN(char x){
  *****/
 void DSA_controller::SetTargetS(char x){
     CVector2 position = GetTarget();
-    SetTarget(CVector2(position.GetX()-stepSize,position.GetY()));
+    SetTarget(CVector2(position.GetX()-SearcherGap,position.GetY()));
 }
 
 /*****
@@ -248,7 +246,7 @@ void DSA_controller::SetTargetS(char x){
  *****/
 void DSA_controller::SetTargetE(char x){
    CVector2 position = GetTarget();
-   SetTarget(CVector2(position.GetX(),position.GetY()-stepSize));
+   SetTarget(CVector2(position.GetX(),position.GetY()-SearcherGap));
 }
 
 /*****
@@ -256,7 +254,7 @@ void DSA_controller::SetTargetE(char x){
  *****/
 void DSA_controller::SetTargetW(char x){
     CVector2 position = GetTarget();
-    SetTarget(CVector2(position.GetX(),position.GetY()+stepSize));
+    SetTarget(CVector2(position.GetX(),position.GetY()+SearcherGap));
 }
 
 /*****
@@ -296,9 +294,10 @@ void DSA_controller::SetTargetW(char x){
     }
     /* If the robot is down traversing the tempPattern, then return home */
     else if(tempPattern.size() == 0) {
-    	DSA = RETURN_TO_NEST;
-        SetTarget(loopFunctions->NestPosition);
-        Reset();
+    	Stop();
+        // DSA = RETURN_TO_NEST;
+        // SetTarget(loopFunctions->NestPosition);
+        // Reset();
 	}
 }
 
@@ -327,12 +326,14 @@ void DSA_controller::SetHoldingFood(){
         vector <CVector2> newFoodList; 
         size_t i = 0;
         for (i = 0; i < loopFunctions->FoodList.size(); i++){
-            if ((GetPosition()-loopFunctions->FoodList[i]).SquareLength() < loopFunctions->FoodRadiusSquared){
+            if ((GetPosition()-loopFunctions->FoodList[i]).SquareLength() < FoodDistanceTolerance){
                 isHoldingFood = true;
+                ResetReturnPosition = false;
+                ReturnPosition = GetTarget();
                 SetTarget(loopFunctions->NestPosition);
-                if(ResetReturnPosition == true) {
-                    ReturnPosition = GetTarget();
-                }
+                //if(ResetReturnPosition == true) {
+                //    ReturnPosition = GetTarget();
+                //}
                 DSA = RETURN_TO_NEST;
             } else {
                 newFoodList.push_back(loopFunctions->FoodList[i]);
