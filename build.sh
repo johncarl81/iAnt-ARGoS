@@ -1,6 +1,5 @@
 cd build
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Release -DARGOS_BUILD_NATIVE=ON
 make clean
 make
 cd ..
-argos3 -c experiments/iAnt_Mac.argos
