@@ -32,7 +32,7 @@ public class Runner {
                 executors.add(new RemoteOrganismExecutor("johncarl@maricopa.cs.unm.edu", "~/iAnt-ARGOS;", log, startTime));
             }
 
-            NEATExperiment experiment = new NEATExperiment(executors, log, populationSize, runtime, distribution, entityCount);
+            Experiment experiment = new Experiment(executors, log, populationSize, runtime, distribution, entityCount);
 
             experiment.run();
         }

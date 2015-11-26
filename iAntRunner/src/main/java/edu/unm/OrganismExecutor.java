@@ -1,7 +1,5 @@
 package edu.unm;
 
-import edu.unm.neat.jneat.Organism;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +28,7 @@ public abstract class OrganismExecutor {
         while(!queue.isEmpty()){
             final OrganismIdWrapper organismWrapper = queue.poll();
             if(organismWrapper != null){
-                final Organism organism = organismWrapper.getOrganism();
+                final Chromosome organism = organismWrapper.getOrganism();
                 final String chromosome = organismWrapper.buildChromosone();
                 InputStream xml = new ByteArrayInputStream(builder.buildXML(chromosome, RAND.nextInt(65536), runtime, distribution, entityCount).getBytes());
 
@@ -40,7 +38,7 @@ public abstract class OrganismExecutor {
                         new ProcessExecutable.OnResultCallback() {
                             @Override
                             public void onResult(Long result) {
-                                organism.setFitness(result);
+                                //todo: organism.setFitness(result);
                                 log.log("done: Fitness: " + result + " Chromosone: " + tag + " " + chromosome);
                             }
                         }
